@@ -1,0 +1,28 @@
+{
+  "name": "codelens-ai",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @codelens/api\" \"npm run dev -w @codelens/web\"",
+    "build": "npm run build --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @codelens/database",
+    "db:push": "npm run db:push -w @codelens/database",
+    "db:seed": "npm run db:seed -w @codelens/database"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.4.5"
+  },
+  "prisma": {
+    "schema": "packages/database/prisma/schema.prisma",
+    "seed": "npx tsx packages/database/prisma/seed.ts"
+  },
+  "dependencies": {
+    "@valkey/valkey-glide": "^2.5.2"
+  }
+}

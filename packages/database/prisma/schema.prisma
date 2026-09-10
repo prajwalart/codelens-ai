@@ -1,0 +1,144 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  githubId      String?   @unique
+  githubToken   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  accounts      Account[]
+  sessions      Session[]
+  repositories  Repository[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Repository {
+  id            String   @id @default(cuid())
+  githubId      Int
+  name          String
+  fullName      String
+  owner         String
+  url           String
+  description   String?
+  language      String?
+  stars         Int      @default(0)
+  forks         Int      @default(0)
+  defaultBranch String   @default("main")
+  userId        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analyses      AnalysisJob[]
+  pullRequests  PullRequest[]
+
+  @@unique([githubId, userId])
+}
+
+model AnalysisJob {
+  id           String   @id @default(cuid())
+  repositoryId String
+  status       String   @default("QUEUED") // QUEUED, FETCHING, SCANNING, AI_REVIEW, COMPLETED, FAILED
+  commitHash   String
+  branch       String
+  score        Float?   // Overall score
+  securityScore Float?
+  maintainabilityScore Float?
+  reliabilityScore Float?
+  performanceScore Float?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  error        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  issues       AnalysisIssue[]
+}
+
+model AnalysisIssue {
+  id            String   @id @default(cuid())
+  analysisJobId String
+  title         String
+  description   String
+  severity      String   // CRITICAL, HIGH, MEDIUM, LOW, INFO
+  category      String   // Security, Bug, Performance, Maintainability, Code Smell
+  file          String
+  line          Int?
+  snippet       String?
+  recommendation String?
+  aiExplanation  String?
+  aiSuggestedFix String?
+  confidence    String?  // HIGH, MEDIUM, LOW
+  createdAt     DateTime @default(now())
+  
+  analysisJob   AnalysisJob @relation(fields: [analysisJobId], references: [id], onDelete: Cascade)
+}
+
+model PullRequest {
+  id           String   @id @default(cuid())
+  repositoryId String
+  githubId     Int      @unique
+  number       Int
+  title        String
+  state        String   // OPEN, CLOSED, MERGED
+  author       String
+  url          String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  reviews      PullRequestReview[]
+}
+
+model PullRequestReview {
+  id            String   @id @default(cuid())
+  pullRequestId String
+  status        String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  reviewCommentId Int?   // GitHub comment ID
+  score         Float?
+  summary       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  pullRequest   PullRequest @relation(fields: [pullRequestId], references: [id], onDelete: Cascade)
+}
