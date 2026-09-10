@@ -23,7 +23,8 @@
     "react-dom": "^18",
     "react-markdown": "^10.1.0",
     "recharts": "^2.15.4",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "bullmq": "^5.81.4"
   },
   "devDependencies": {
     "@types/node": "^20",
