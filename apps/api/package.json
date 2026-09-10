@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@codelens/database": "*",
+    "@codelens/database": "workspace:*",
     "bullmq": "^5.7.8",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
