@@ -112,3 +112,19 @@ export const analysisWorker = new Worker('analysis', async (job) => {
     }
   }
 }, { connection });
+
+analysisWorker.on('connecting', () => {
+  console.log('[Worker] Connecting to Redis...');
+});
+
+analysisWorker.on('ready', () => {
+  console.log('[Worker] Connected to Redis successfully and ready to process jobs.');
+});
+
+analysisWorker.on('error', (error) => {
+  console.error('[Worker] Redis connection or processing error:', error);
+});
+
+analysisWorker.on('closed', () => {
+  console.log('[Worker] Redis connection closed.');
+});
